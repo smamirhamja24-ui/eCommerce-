@@ -82,6 +82,53 @@
         "updatedAt": { "type": "string", "format": "date-time" }
       },
       "required": ["userId", "items", "totalAmount", "status", "paymentMethod", "createdAt"]
+    },
+    "Cart": {
+      "title": "User Cart",
+      "description": "User's current shopping cart.",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "items": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "productId": { "type": "string" },
+              "quantity": { "type": "integer" },
+              "addedAt": { "type": "string", "format": "date-time" }
+            }
+          }
+        },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["userId", "items", "updatedAt"]
+    },
+    "Wishlist": {
+      "title": "User Wishlist",
+      "description": "User's saved items.",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "items": { "type": "array", "items": { "type": "object" } },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["userId", "items", "updatedAt"]
+    },
+    "Review": {
+      "title": "Product Review",
+      "description": "User reviews for products.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "productId": { "type": "string" },
+        "userId": { "type": "string" },
+        "userName": { "type": "string" },
+        "rating": { "type": "number", "minimum": 1, "maximum": 5 },
+        "comment": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["productId", "userId", "rating", "createdAt"]
     }
   },
   "firestore": {
@@ -96,6 +143,18 @@
     "/orders/{orderId}": {
       "schema": "Order",
       "description": "Orders collection."
+    },
+    "/carts/{userId}": {
+      "schema": "Cart",
+      "description": "User cart collection (doc ID is userId)."
+    },
+    "/wishlists/{userId}": {
+      "schema": "Wishlist",
+      "description": "User wishlist collection (doc ID is userId)."
+    },
+    "/reviews/{reviewId}": {
+      "schema": "Review",
+      "description": "Product reviews collection."
     }
   }
 }

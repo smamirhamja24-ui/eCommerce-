@@ -1,112 +1,57 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { motion } from 'motion/react';
 import { Search, SlidersHorizontal, Grid, List, ChevronDown, X } from 'lucide-react';
 import { ProductCard } from '../components/ProductCard';
-import { Product } from '../types';
 import { cn } from '../lib/utils';
+import { CATEGORIES } from '../constants';
+import { productService } from '../services/productService';
+import { Product } from '../types';
 
-const MOCK_PRODUCTS: Product[] = [
-  {
-    id: '1',
-    name: 'Organic Fresh Red Tomato - 500g',
-    description: 'Fresh organic tomatoes from local farms.',
-    price: 120,
-    discountPrice: 95,
-    category: 'Vegetables',
-    images: ['https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&q=80&w=500'],
-    stock: 50,
-    unit: '500g',
-    vendorId: 'v1',
-    rating: 4.8,
-    numReviews: 24,
-    createdAt: new Date().toISOString(),
-    isFlashSale: true,
-    tags: ['fresh', 'organic']
-  },
-  {
-    id: '2',
-    name: 'Premium Basmati Rice - 5kg',
-    description: 'Extra long grain premium basmati rice.',
-    price: 850,
-    category: 'Grains',
-    images: ['https://images.unsplash.com/photo-1586201375761-83865001e31c?auto=format&fit=crop&q=80&w=500'],
-    stock: 20,
-    unit: '5kg',
-    vendorId: 'v1',
-    rating: 4.5,
-    numReviews: 12,
-    createdAt: new Date().toISOString(),
-    tags: ['rice', 'staple']
-  },
-  {
-    id: '3',
-    name: 'Pure Honey Mustard - 250ml',
-    description: 'Natural honey blended with mustard seeds.',
-    price: 250,
-    discountPrice: 220,
-    category: 'Condiments',
-    images: ['https://images.unsplash.com/photo-1511200055112-78d103362a26?auto=format&fit=crop&q=80&w=500'],
-    stock: 15,
-    unit: '250ml',
-    vendorId: 'v2',
-    rating: 4.9,
-    numReviews: 8,
-    createdAt: new Date().toISOString(),
-    isFlashSale: true,
-    tags: ['honey', 'premium']
-  },
-  {
-    id: '4',
-    name: 'Farm Fresh Broiler Chicken - Whole',
-    description: 'Cleaned and ready to cook fresh chicken.',
-    price: 450,
-    category: 'Meat',
-    images: ['https://images.unsplash.com/photo-1587593817645-425017df7f6c?auto=format&fit=crop&q=80&w=500'],
-    stock: 10,
-    unit: '1.2kg',
-    vendorId: 'v1',
-    rating: 4.7,
-    numReviews: 45,
-    createdAt: new Date().toISOString(),
-    tags: ['meat', 'halal']
-  },
-  {
-    id: '5',
-    name: 'Fresh Fuji Apple - 1kg',
-    description: 'Sweet and crunchy Fuji apples.',
-    price: 320,
-    category: 'Fruits',
-    images: ['https://images.unsplash.com/photo-1560806887-1e4cd0b6cbd6?auto=format&fit=crop&q=80&w=500'],
-    stock: 40,
-    unit: '1kg',
-    vendorId: 'v1',
-    rating: 4.6,
-    numReviews: 18,
-    createdAt: new Date().toISOString(),
-    tags: ['fruit', 'fresh']
-  }
-];
-
-const CATEGORIES = ['All', 'Vegetables', 'Fruits', 'Grains', 'Meat', 'Condiments', 'Bakery'];
+const CATEGORY_NAMES = ['All', ...CATEGORIES.map(c => c.name)];
 
 export const Shop: React.FC = () => {
+  const [products, setProducts] = useState<Product[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [searchQuery, setSearchQuery] = useState('');
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [sortBy, setSortBy] = useState('Default');
 
+  useEffect(() => {
+    const fetchProducts = async () => {
+      const data = await productService.getAllProducts();
+      setProducts(data);
+      setIsLoading(false);
+    };
+    fetchProducts();
+  }, []);
+
   const filteredProducts = useMemo(() => {
-    return MOCK_PRODUCTS.filter(product => {
+    return products.filter(product => {
       const matchesCategory = selectedCategory === 'All' || product.category === selectedCategory;
       const matchesSearch = product.name.toLowerCase().includes(searchQuery.toLowerCase());
       return matchesCategory && matchesSearch;
     }).sort((a, b) => {
-      if (sortBy === 'Price: Low to High') return a.price - b.price;
-      if (sortBy === 'Price: High to Low') return b.price - a.price;
-      if (sortBy === 'Rating') return b.rating - a.rating;
+      if (sortBy === 'Price: Low to High') return a.price - (a.discountPrice || a.price) - (b.price - (b.discountPrice || b.price)); // Simple logic
+      // Corrected price sort (prefer discount price)
+      const getPrice = (p: Product) => p.discountPrice || p.price;
+      if (sortBy === 'Price: Low to High') return getPrice(a) - getPrice(b);
+      if (sortBy === 'Price: High to Low') return getPrice(b) - getPrice(a);
+      if (sortBy === 'Rating') return (b.rating || 0) - (a.rating || 0);
       return 0;
     });
-  }, [selectedCategory, searchQuery, sortBy]);
+  }, [products, selectedCategory, searchQuery, sortBy]);
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-white">
+        <div className="flex flex-col items-center gap-4">
+          <div className="w-12 h-12 border-4 border-emerald-600 border-t-transparent rounded-full animate-spin"></div>
+          <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Discovering fresh items...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
@@ -144,7 +89,7 @@ export const Shop: React.FC = () => {
           <div>
             <h3 className="font-black text-gray-900 text-lg mb-6">Categories</h3>
             <div className="space-y-2">
-              {CATEGORIES.map(cat => (
+              {CATEGORY_NAMES.map(cat => (
                 <button
                   key={cat}
                   onClick={() => setSelectedCategory(cat)}
@@ -250,7 +195,7 @@ export const Shop: React.FC = () => {
               <div>
                 <h4 className="font-bold mb-4 uppercase text-[10px] tracking-widest text-gray-400">Categories</h4>
                 <div className="grid grid-cols-1 gap-2">
-                  {CATEGORIES.map(cat => (
+                  {CATEGORY_NAMES.map(cat => (
                     <button
                       key={cat}
                       onClick={() => { setSelectedCategory(cat); setIsSidebarOpen(false); }}

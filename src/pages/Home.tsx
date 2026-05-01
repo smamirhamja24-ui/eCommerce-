@@ -1,307 +1,199 @@
-import React, { useState, useEffect } from 'react';
-import { motion } from 'motion/react';
+import React, { useState, useEffect, useMemo } from 'react';
+import { motion, AnimatePresence } from 'motion/react';
 import { cn } from '../lib/utils';
 import { 
   ArrowRight, 
   ChevronRight, 
+  ChevronLeft,
   Truck, 
   RotateCcw, 
   ShieldCheck, 
   BadgePercent,
-  Headphones,
-  Shirt,
-  Home as HomeIcon,
-  Sparkles,
-  Trophy,
-  Gamepad2,
-  Watch,
-  Book,
-  Smartphone
+  Headphones
 } from 'lucide-react';
 import { ProductCard } from '../components/ProductCard';
-import { Product } from '../types';
 import { Link } from 'react-router-dom';
+import { CATEGORIES, HERO_SLIDES } from '../constants';
+import { productService } from '../services/productService';
+import { Product } from '../types';
 
-const MOCK_PRODUCTS: Product[] = [
-  {
-    id: '1',
-    name: 'Smart Watch Series 9 - 45mm GPS',
-    description: 'Advanced features for health and fitness.',
-    price: 5999,
-    discountPrice: 4799,
-    category: 'Electronics',
-    images: ['https://images.unsplash.com/photo-1546868871-7041f2a55e12?auto=format&fit=crop&q=80&w=500'],
-    stock: 50,
-    unit: '1 unit',
-    vendorId: 'v1',
-    rating: 4.8,
-    numReviews: 128,
-    createdAt: new Date().toISOString(),
-    isFlashSale: true,
-    tags: [],
-  },
-  {
-    id: '2',
-    name: 'Wireless Earbuds Pro with Noise Cancelling',
-    description: 'Crystal clear sound with long battery life.',
-    price: 2999,
-    discountPrice: 2549,
-    category: 'Electronics',
-    images: ['https://images.unsplash.com/photo-1590658268037-6bf12165a8df?auto=format&fit=crop&q=80&w=500'],
-    stock: 20,
-    unit: '1 pair',
-    vendorId: 'v1',
-    rating: 4.5,
-    numReviews: 96,
-    createdAt: new Date().toISOString(),
-    isFlashSale: true,
-    tags: [],
-  },
-  {
-    id: '3',
-    name: 'Urban Backpack - Water Resistant',
-    description: 'Perfect for daily commute and travel.',
-    price: 1899,
-    category: 'Accessories',
-    images: ['https://images.unsplash.com/photo-1553062407-98eeb94c6a62?auto=format&fit=crop&q=80&w=500'],
-    stock: 15,
-    unit: '1 unit',
-    vendorId: 'v2',
-    rating: 4.9,
-    numReviews: 64,
-    createdAt: new Date().toISOString(),
-    tags: [],
-  },
-  {
-    id: '4',
-    name: 'Luxury Perfume - Signature Scents 100ml',
-    description: 'Elegant and long-lasting floral fragrance.',
-    price: 2999,
-    discountPrice: 2249,
-    category: 'Beauty',
-    images: ['https://images.unsplash.com/photo-1541643600914-78b084683601?auto=format&fit=crop&q=80&w=500'],
-    stock: 10,
-    unit: '100ml',
-    vendorId: 'v1',
-    rating: 4.7,
-    numReviews: 75,
-    createdAt: new Date().toISOString(),
-    isFlashSale: true,
-    tags: [],
-  }
-];
-
-const CATEGORIES = [
-  { name: 'Electronics', icon: <Headphones className="w-6 h-6" />, color: 'bg-indigo-50' },
-  { name: 'Fashion', icon: <Shirt className="w-6 h-6" />, color: 'bg-red-50' },
-  { name: 'Home & Living', icon: <HomeIcon className="w-6 h-6" />, color: 'bg-amber-50' },
-  { name: 'Beauty', icon: <Sparkles className="w-6 h-6" />, color: 'bg-emerald-50' },
-  { name: 'Sports', icon: <Trophy className="w-6 h-6" />, color: 'bg-blue-50' },
-  { name: 'Toys & Games', icon: <Gamepad2 className="w-6 h-6" />, color: 'bg-orange-50' },
-  { name: 'Accessories', icon: <Watch className="w-6 h-6" />, color: 'bg-slate-50' },
-  { name: 'Books', icon: <Book className="w-6 h-6" />, color: 'bg-rose-50' },
-];
+const getRecommendedProductsFromList = (list: Product[]) => {
+  return [...list].sort(() => 0.5 - Math.random()).slice(0, 8);
+};
 
 export const Home: React.FC = () => {
-  const [timeLeft, setTimeLeft] = useState({ h: 8, m: 24, s: 12 });
+  const [currentSlide, setCurrentSlide] = useState(0);
+  const [products, setProducts] = useState<Product[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchProducts = async () => {
+      const data = await productService.getAllProducts();
+      setProducts(data);
+      setIsLoading(false);
+    };
+    fetchProducts();
+  }, []);
+
+  const recommendedProducts = useMemo(() => {
+    if (products.length === 0) return [];
+    return getRecommendedProductsFromList(products);
+  }, [products]);
 
   useEffect(() => {
     const timer = setInterval(() => {
-      setTimeLeft(prev => {
-        if (prev.s > 0) return { ...prev, s: prev.s - 1 };
-        if (prev.m > 0) return { ...prev, m: prev.m - 1, s: 59 };
-        if (prev.h > 0) return { ...prev, h: prev.h - 1, m: 59, s: 59 };
-        return prev;
-      });
-    }, 1000);
+      setCurrentSlide((prev) => (prev + 1) % HERO_SLIDES.length);
+    }, 5000);
     return () => clearInterval(timer);
   }, []);
 
+  const nextSlide = () => setCurrentSlide((prev) => (prev + 1) % HERO_SLIDES.length);
+  const prevSlide = () => setCurrentSlide((prev) => (prev - 1 + HERO_SLIDES.length) % HERO_SLIDES.length);
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-white">
+        <div className="flex flex-col items-center gap-4">
+          <div className="w-12 h-12 border-4 border-emerald-600 border-t-transparent rounded-full animate-spin"></div>
+          <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Loading Bazarify...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="bg-white min-h-screen">
-      {/* Flash Offer Strip */}
-      <div className="bg-primary py-2 px-4 relative overflow-hidden">
-        <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-3 relative z-10">
-          <div className="flex items-center gap-3">
-            <motion.span 
-              animate={{ opacity: [1, 0.5, 1] }} 
-              transition={{ repeat: Infinity, duration: 1.5 }}
-              className="px-2 py-0.5 bg-yellow-400 text-dark text-[10px] font-black rounded uppercase tracking-tighter"
-            >
-              🔥 Eid Mega Sale
-            </motion.span>
-            <p className="text-white text-[11px] font-bold uppercase tracking-widest">Up to 70% OFF | Free Delivery Over ৳999</p>
-          </div>
-          <div className="flex items-center gap-4 text-white font-black text-[11px] tracking-widest">
-            <span className="opacity-50">ENDS IN:</span>
-            <div className="flex gap-2">
-              <span className="bg-white/10 px-2 py-1 rounded">0{timeLeft.h}h</span>
-              <span className="bg-white/10 px-2 py-1 rounded">{timeLeft.m}m</span>
-              <span className="bg-white/10 px-2 py-1 rounded">{timeLeft.s}s</span>
-            </div>
-          </div>
-        </div>
-        <div className="absolute top-0 right-0 w-1/4 h-full bg-white/5 -skew-x-12 translate-x-1/2"></div>
-      </div>
-
-      {/* Hero Section */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 lg:py-12 relative">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
-          {/* Content Left */}
-          <div className="lg:col-span-12 xl:col-span-6 space-y-10 order-2 xl:order-1 mt-12 lg:mt-0">
-            <div className="space-y-6">
-              <motion.div
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                className="flex items-center gap-3 text-primary font-black uppercase tracking-[0.2em] text-[11px]"
-              >
-                <div className="w-12 h-0.5 bg-primary"></div>
-                Premium Shopping Experience
-              </motion.div>
-              
-              <motion.h1
-                initial={{ opacity: 0, y: 30 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="text-5xl sm:text-7xl font-black text-dark leading-[1.1] tracking-tight"
-              >
-                বাংলাদেশের স্মার্ট <span className="text-primary">শপিং</span> এখন আরও সহজ
-              </motion.h1>
-              
-              <motion.p
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.1 }}
-                className="text-slate-500 text-lg sm:text-xl font-medium max-w-lg leading-relaxed"
-              >
-                Original products, best price, cash on delivery, fast delivery all over Bangladesh.
-              </motion.p>
-            </div>
-
+      {/* Hero Section with Slider */}
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6 relative overflow-hidden group">
+        <div className="relative h-[480px] sm:h-[500px] lg:h-[600px] rounded-[3rem] overflow-hidden">
+          <AnimatePresence mode="wait">
             <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.2 }}
-              className="flex flex-col sm:flex-row gap-4 sm:items-center"
+              key={currentSlide}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.7 }}
+              className={cn("absolute inset-0 transition-colors duration-1000", HERO_SLIDES[currentSlide].bg)}
             >
-              <div className="relative group overflow-hidden rounded-2xl shadow-2xl shadow-primary/20">
-                <button className="px-12 py-5 bg-primary text-white font-black text-xs uppercase tracking-[0.2em] flex items-center gap-3 relative z-10 transition-all group-hover:bg-primary-hover active:scale-95">
-                  এখনই কিনুন
-                  <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-                </button>
-                <div className="absolute inset-0 bg-white/10 -translate-x-full group-hover:translate-x-full transition-transform duration-1000 skew-x-12"></div>
-              </div>
-              <button className="px-10 py-5 bg-white border border-slate-200 text-dark rounded-2xl font-black text-xs uppercase tracking-[0.2em] active:scale-95 transition-all hover:bg-slate-50">
-                অফার দেখুন
-              </button>
-            </motion.div>
+              {/* Decorative elements */}
+              <div className="absolute top-0 right-0 w-2/3 h-full bg-black/5 -skew-x-12 translate-x-1/3"></div>
+              <div className="absolute bottom-[-10%] left-[-10%] w-[30%] h-[30%] bg-white/10 rounded-full blur-[80px]"></div>
 
-            <div className="space-y-4">
-              <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">দেশের মানুষের জন্য বিশ্বমানের অনলাইন শপিং</p>
-              <div className="flex flex-wrap gap-x-8 gap-y-4">
-                {[
-                  { icon: Truck, label: '64 District' },
-                  { icon: RotateCcw, label: 'Easy Return' },
-                  { icon: ShieldCheck, label: 'Secure' },
-                  { icon: Headphones, label: '24/7 Support' }
-                ].map((item, i) => (
-                  <div key={i} className="flex items-center gap-2 grayscale group cursor-default">
-                    <item.icon className="w-4 h-4 text-primary group-hover:grayscale-0 transition-all" />
-                    <span className="text-[11px] font-black text-slate-400 uppercase tracking-widest group-hover:text-primary transition-colors">{item.label}</span>
+              <div className="absolute inset-0 flex items-center px-8 sm:px-14 lg:px-24">
+                <div className="max-w-xl z-20 space-y-8">
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.8 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    className="inline-flex items-center px-4 py-2 bg-white/10 backdrop-blur-md rounded-full text-[10px] sm:text-[11px] font-black uppercase tracking-[0.2em] text-white border border-white/10"
+                  >
+                    <BadgePercent className="w-4 h-4 mr-2" />
+                    {HERO_SLIDES[currentSlide].badge}
+                  </motion.div>
+                  
+                  <div className="space-y-4">
+                    <motion.h2
+                      initial={{ opacity: 0, y: 30 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="text-5xl sm:text-8xl font-black text-white leading-[0.95] tracking-tighter"
+                    >
+                      {HERO_SLIDES[currentSlide].title}<br />
+                      <span className={HERO_SLIDES[currentSlide].accent}>{HERO_SLIDES[currentSlide].highlight}</span>
+                    </motion.h2>
+                    <motion.p
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.1 }}
+                      className="text-white/80 text-base sm:text-xl font-medium max-w-md"
+                    >
+                      {HERO_SLIDES[currentSlide].sub}
+                    </motion.p>
                   </div>
-                ))}
+
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.2 }}
+                    className="flex items-center gap-6"
+                  >
+                    <Link to="/shop" className="px-10 py-5 bg-white text-slate-900 rounded-2xl font-black text-xs uppercase tracking-[0.2em] hover:bg-slate-50 transition-all flex items-center gap-3 shadow-2xl shadow-black/20 active:scale-95 group">
+                      Shop Now
+                      <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                    </Link>
+                  </motion.div>
+                </div>
+
+                {/* Hero Image Container */}
+                <div className="absolute right-0 top-0 bottom-0 w-1/2 flex items-center justify-center p-12">
+                  <motion.div
+                    key={`img-${currentSlide}`}
+                    initial={{ opacity: 0, x: 100, rotate: 10 }}
+                    animate={{ opacity: 1, x: 0, rotate: -5 }}
+                    transition={{ duration: 0.8, ease: "easeOut" }}
+                    className="relative w-full h-full flex items-center justify-center"
+                  >
+                    <div className="absolute w-[80%] aspect-square bg-white/10 rounded-full blur-[100px] animate-pulse"></div>
+                    <img 
+                      src={HERO_SLIDES[currentSlide].image} 
+                      alt="" 
+                      className="w-full h-[60%] lg:h-[75%] object-contain drop-shadow-[0_45px_65px_rgba(0,0,0,0.3)] z-10 transition-transform duration-1000"
+                    />
+                  </motion.div>
+                </div>
               </div>
-            </div>
+            </motion.div>
+          </AnimatePresence>
+
+          {/* Navigation Arrows */}
+          <div className="absolute inset-x-8 top-1/2 -translate-y-1/2 flex justify-between z-30 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+            <button 
+              onClick={prevSlide}
+              className="w-12 h-12 bg-white/10 backdrop-blur-md rounded-2xl flex items-center justify-center text-white border border-white/20 hover:bg-white/20 transition-all active:scale-90"
+            >
+              <ChevronLeft className="w-6 h-6" />
+            </button>
+            <button 
+              onClick={nextSlide}
+              className="w-12 h-12 bg-white/10 backdrop-blur-md rounded-2xl flex items-center justify-center text-white border border-white/20 hover:bg-white/20 transition-all active:scale-90"
+            >
+              <ChevronRight className="w-6 h-6" />
+            </button>
           </div>
 
-          {/* Visual Right */}
-          <div className="lg:col-span-12 xl:col-span-6 relative order-1 xl:order-2">
-            <div className="relative aspect-square w-full sm:w-[500px] lg:w-[600px] mx-auto group">
-              {/* Decorative shapes */}
-              <div className="absolute inset-0 bg-surface-50 rounded-[4rem] group-hover:rotate-2 transition-transform duration-700"></div>
-              <div className="absolute -top-10 -right-10 w-40 h-40 bg-primary/5 rounded-full blur-[80px]"></div>
-              
-              {/* Main Visual Elements */}
-              <div className="relative w-full h-full p-8 flex items-center justify-center">
-                {/* Floating Products */}
-                <motion.div
-                  animate={{ y: [0, -20, 0], rotate: [-2, 2, -2] }}
-                  transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
-                  className="absolute top-10 left-10 w-24 h-24 bg-white p-4 rounded-3xl shadow-2xl z-20"
-                >
-                  <Watch className="w-full h-full text-indigo-200" />
-                </motion.div>
-                
-                <motion.div
-                  animate={{ y: [0, 20, 0], rotate: [2, -2, 2] }}
-                  transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
-                  className="absolute bottom-20 right-10 w-28 h-28 bg-white p-5 rounded-[2.5rem] shadow-2xl z-20"
-                >
-                  <Smartphone className="w-full h-full text-emerald-200" />
-                </motion.div>
-
-                <div className="relative z-10 w-full h-full rounded-[3.5rem] overflow-hidden bg-white shadow-inner flex items-center justify-center p-4">
-                  <img 
-                    src="https://images.unsplash.com/photo-1483985988355-763728e1935b?auto=format&fit=crop&q=80&w=1200" 
-                    alt="Premium Shopper"
-                    className="w-full h-full object-cover rounded-[3rem] group-hover:scale-105 transition-transform duration-1000"
-                  />
-                  <div className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-black/20 to-transparent"></div>
-                </div>
-
-                {/* Delivery Rider Element */}
-                <div className="absolute -bottom-6 -left-6 bg-dark p-6 rounded-[2.5rem] shadow-2xl z-30 flex items-center gap-4">
-                  <div className="w-12 h-12 bg-primary rounded-2xl flex items-center justify-center">
-                    <Truck className="w-7 h-7 text-white" />
-                  </div>
-                  <div>
-                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Fast Delivery</p>
-                    <p className="text-white font-black text-sm tracking-tight leading-none">Nationwide</p>
-                  </div>
-                </div>
-
-                {/* Stats Tag */}
-                <div className="absolute top-20 -right-4 bg-white/80 backdrop-blur-md p-4 rounded-2xl border border-white shadow-xl z-30">
-                  <div className="flex -space-x-2 mb-2">
-                    {[1, 2, 3].map(i => (
-                      <div key={i} className="w-6 h-6 rounded-full border-2 border-white bg-slate-200"></div>
-                    ))}
-                  </div>
-                  <p className="text-[10px] font-black text-dark uppercase tracking-tighter">1M+ Customers</p>
-                </div>
-              </div>
-            </div>
+          {/* Slide Indicators */}
+          <div className="absolute bottom-10 left-1/2 -translate-x-1/2 flex gap-3 z-30">
+            {HERO_SLIDES.map((_, i) => (
+              <button
+                key={i}
+                onClick={() => setCurrentSlide(i)}
+                className={cn(
+                  "h-1.5 rounded-full transition-all duration-500",
+                  currentSlide === i ? "w-10 bg-white" : "w-2 bg-white/30"
+                )}
+              />
+            ))}
           </div>
         </div>
       </section>
 
-      {/* Mini Stats & Category Chips */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
-        <div className="flex flex-col lg:flex-row items-center justify-between gap-8 border-t border-slate-50 pt-10">
-          <div className="flex items-center gap-4 overflow-x-auto pb-4 scrollbar-hide w-full lg:w-auto">
-            <span className="text-[11px] font-black text-slate-400 uppercase tracking-widest shrink-0">Popuar:</span>
-            {['Electronics', 'Fashion', 'Grocery', 'Beauty', 'Home'].map((cat, i) => (
-              <Link 
-                key={i} 
-                to={`/shop?category=${cat.toLowerCase()}`}
-                className="px-5 py-2.5 bg-slate-50 hover:bg-primary hover:text-white rounded-full text-[10px] font-black uppercase tracking-widest transition-all shrink-0"
-              >
-                {cat}
-              </Link>
-            ))}
-          </div>
-
-          <div className="flex items-center gap-10">
-            {[
-              { val: '1M+', label: 'Customers' },
-              { val: '10K+', label: 'Products' },
-              { val: '24/7', label: 'Support' }
-            ].map((stat, i) => (
-              <div key={i} className="text-center lg:text-left">
-                <p className="text-2xl font-black text-dark tracking-tighter leading-none">{stat.val}</p>
-                <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mt-1">{stat.label}</p>
+      {/* Quick Stats / Badges */}
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 -mt-12 relative z-30">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          {[
+            { icon: <Truck className="w-6 h-6" />, title: 'Free Shipping', sub: 'Calculated at checkout' },
+            { icon: <RotateCcw className="w-6 h-6" />, title: 'Easy Returns', sub: '30 days money back' },
+            { icon: <ShieldCheck className="w-6 h-6" />, title: 'Secure Payment', sub: '100% secure processing' },
+            { icon: <BadgePercent className="w-6 h-6" />, title: 'Best Deals', sub: 'Up to 70% flash sale' }
+          ].map((item, i) => (
+            <div key={i} className="bg-white p-5 rounded-3xl border border-slate-100 shadow-xl shadow-slate-200/50 flex items-center gap-4 hover:-translate-y-1 transition-transform cursor-default">
+              <div className="w-12 h-12 bg-emerald-50 text-emerald-600 rounded-2xl flex items-center justify-center shrink-0">
+                {item.icon}
               </div>
-            ))}
-          </div>
+              <div className="text-left">
+                <h4 className="text-[10px] font-black text-slate-800 uppercase tracking-widest mb-0.5 leading-none">{item.title}</h4>
+                <p className="text-[9px] text-slate-400 font-bold uppercase tracking-widest leading-none">{item.sub}</p>
+              </div>
+            </div>
+          ))}
         </div>
       </section>
 
@@ -315,7 +207,7 @@ export const Home: React.FC = () => {
           </Link>
         </div>
         <div className="grid grid-cols-4 sm:grid-cols-4 lg:grid-cols-8 gap-x-4 gap-y-8">
-          {CATEGORIES.map((cat, i) => (
+          {CATEGORIES.slice(0, 8).map((cat, i) => (
             <Link
               key={i}
               to={`/shop?category=${cat.name}`}
@@ -347,7 +239,7 @@ export const Home: React.FC = () => {
           </Link>
         </div>
         <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
-          {MOCK_PRODUCTS.filter(p => p.isFlashSale).map(product => (
+          {products.filter(p => p.isFlashSale).map(product => (
             <ProductCard key={product.id} product={product} />
           ))}
         </div>
@@ -373,17 +265,48 @@ export const Home: React.FC = () => {
         ))}
       </section>
 
-      {/* Featured Products */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 bg-[#fafafa] rounded-[3rem]">
-        <div className="flex justify-between items-center mb-12">
-          <h3 className="text-2xl font-black text-slate-800 tracking-tight">Featured Products</h3>
+      {/* Dynamic Category Sections */}
+      {CATEGORIES.map((category) => {
+        const categoryProducts = products.filter(p => p.category === category.name);
+        if (categoryProducts.length === 0) return null;
+
+        return (
+          <section key={category.name} className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+            <div className="flex justify-between items-center mb-8">
+              <div className="flex items-center gap-4">
+                <div className={cn("w-12 h-12 rounded-2xl flex items-center justify-center text-slate-700", category.color)}>
+                  {category.icon}
+                </div>
+                <div>
+                  <h3 className="text-xl font-black text-slate-800 tracking-tight">{category.name}</h3>
+                  <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">Fresh from our {category.name.toLowerCase()} collection</p>
+                </div>
+              </div>
+              <Link to={`/shop?category=${category.name}`} className="text-[10px] font-black text-emerald-600 uppercase tracking-widest hover:underline flex items-center gap-1">
+                View All
+                <ChevronRight className="w-3 h-3" />
+              </Link>
+            </div>
+            <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+              {categoryProducts.slice(0, 4).map(product => (
+                <ProductCard key={product.id} product={product} />
+              ))}
+            </div>
+          </section>
+        );
+      })}
+
+      {/* Featured Products / All Products */}
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 bg-[#fafafa] rounded-[3rem] my-10">
+        <div className="flex justify-between items-center mb-12 px-4 sm:px-8">
+          <h3 className="text-2xl font-black text-slate-800 tracking-tight">Recommendation for You</h3>
           <Link to="/shop" className="text-[11px] font-black text-slate-400 uppercase tracking-widest hover:text-emerald-600 flex items-center gap-2 group transition-colors">
-            View All Products
+            Explore More
             <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
           </Link>
         </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
-          {MOCK_PRODUCTS.map(product => (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 px-4 sm:px-8">
+          {recommendedProducts.map(product => (
             <ProductCard key={product.id} product={product} />
           ))}
         </div>

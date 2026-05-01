@@ -14,6 +14,7 @@ import { OrderSuccess } from './pages/OrderSuccess';
 import { HelpSupport } from './pages/HelpSupport';
 import { Orders } from './pages/Orders';
 import { OrderDetails } from './pages/OrderDetails';
+import { AdminDashboard } from './pages/AdminDashboard';
 
 export default function App() {
   return (
@@ -31,6 +32,7 @@ export default function App() {
         <Route path="order/:id" element={<OrderDetails />} />
         <Route path="help" element={<HelpSupport />} />
         <Route path="account" element={<Account />} />
+        <Route path="admin" element={<AdminDashboard />} />
         <Route path="wishlist" element={<Wishlist />} />
         <Route path="login" element={<Login />} />
         <Route path="register" element={<Login />} />

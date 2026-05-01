@@ -1,9 +1,37 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'motion/react';
-import { Mail, Lock, ArrowRight, Chrome, Github } from 'lucide-react';
+import { Mail, Lock, ArrowRight, Chrome } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
+import { useNavigate } from 'react-router-dom';
+import { cn } from '../lib/utils';
 
 export const Login: React.FC = () => {
   const [isLogin, setIsLogin] = useState(true);
+  const { user, signInWithGoogle, loading } = useAuth();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (!loading && user) {
+      navigate('/account');
+    }
+  }, [user, loading, navigate]);
+
+  const handleGoogleSignIn = async () => {
+    try {
+      await signInWithGoogle();
+      navigate('/');
+    } catch (error) {
+      console.error('Login failed:', error);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-white">
+        <div className="w-12 h-12 border-4 border-green-600 border-t-transparent rounded-full animate-spin"></div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-[80vh] flex items-center justify-center px-4 py-20 bg-gray-50/50">
@@ -96,14 +124,13 @@ export const Login: React.FC = () => {
             <div className="relative flex justify-center text-xs font-bold uppercase"><span className="bg-white px-4 text-gray-400">Or continue with</span></div>
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <button className="flex items-center justify-center space-x-3 py-4 border border-gray-100 rounded-2xl hover:bg-gray-50 transition-colors font-bold text-gray-700">
+          <div className="grid grid-cols-1 gap-4">
+            <button 
+              onClick={handleGoogleSignIn}
+              className="flex items-center justify-center space-x-3 py-4 border border-gray-100 rounded-2xl hover:bg-gray-50 transition-colors font-bold text-gray-700"
+            >
               <Chrome className="w-5 h-5 text-gray-400" />
-              <span>Google</span>
-            </button>
-            <button className="flex items-center justify-center space-x-3 py-4 border border-gray-100 rounded-2xl hover:bg-gray-50 transition-colors font-bold text-gray-700">
-              <Github className="w-5 h-5 text-gray-400" />
-              <span>Github</span>
+              <span>Continue with Google</span>
             </button>
           </div>
         </div>
@@ -111,5 +138,3 @@ export const Login: React.FC = () => {
     </div>
   );
 };
-
-import { cn } from '../lib/utils';

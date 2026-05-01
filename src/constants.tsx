@@ -1,0 +1,296 @@
+import React from 'react';
+import { 
+  Headphones, 
+  Shirt, 
+  Home as HomeIcon, 
+  Sparkles, 
+  Trophy, 
+  Gamepad2, 
+  Watch, 
+  Book,
+  Apple,
+  Carrot,
+  GlassWater,
+  Beef
+} from 'lucide-react';
+import { Product } from './types';
+
+export const CATEGORIES = [
+  { name: 'Electronics', icon: <Headphones className="w-6 h-6" />, color: 'bg-indigo-50' },
+  { name: 'Fashion', icon: <Shirt className="w-6 h-6" />, color: 'bg-red-50' },
+  { name: 'Vegetables', icon: <Carrot className="w-6 h-6" />, color: 'bg-orange-50' },
+  { name: 'Fruits', icon: <Apple className="w-6 h-6" />, color: 'bg-rose-50' },
+  { name: 'Meat', icon: <Beef className="w-6 h-6" />, color: 'bg-red-100' },
+  { name: 'Condiments', icon: <GlassWater className="w-6 h-6" />, color: 'bg-blue-50' },
+  { name: 'Home & Living', icon: <HomeIcon className="w-6 h-6" />, color: 'bg-amber-50' },
+  { name: 'Beauty', icon: <Sparkles className="w-6 h-6" />, color: 'bg-emerald-50' },
+  { name: 'Sports', icon: <Trophy className="w-6 h-6" />, color: 'bg-blue-50' },
+  { name: 'Toys & Games', icon: <Gamepad2 className="w-6 h-6" />, color: 'bg-orange-50' },
+  { name: 'Accessories', icon: <Watch className="w-6 h-6" />, color: 'bg-slate-50' },
+  { name: 'Books', icon: <Book className="w-6 h-6" />, color: 'bg-rose-100' },
+];
+
+export const HERO_SLIDES = [
+  {
+    id: 1,
+    title: "Stay Cool.",
+    highlight: "Look Great.",
+    sub: "Summer Collection 2024 is now live. Exclusive discounts on premium summer essentials.",
+    image: "https://images.unsplash.com/photo-1572635196237-14b3f281503f?auto=format&fit=crop&q=80&w=1200",
+    bg: "bg-emerald-600",
+    accent: "text-emerald-200",
+    badge: "New Arrival"
+  },
+  {
+    id: 2,
+    title: "Gadgets.",
+    highlight: "Smart Living.",
+    sub: "Upgrade your lifestyle with our latest collection of smart watches and accessories.",
+    image: "https://images.unsplash.com/photo-1546868871-7041f2a55e12?auto=format&fit=crop&q=80&w=1200",
+    bg: "bg-indigo-600",
+    accent: "text-indigo-200",
+    badge: "Tech deals"
+  },
+  {
+    id: 3,
+    title: "Organic.",
+    highlight: "Eat Fresh.",
+    sub: "Pure and organic food items delivered straight from the farm to your doorstep.",
+    image: "https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&q=80&w=1200",
+    bg: "bg-amber-600",
+    accent: "text-amber-200",
+    badge: "100% Natural"
+  }
+];
+
+export const MOCK_PRODUCTS: Product[] = [
+  // Electronics
+  {
+    id: 'e1',
+    name: 'Smart Watch Series 9 - 45mm GPS',
+    description: 'Advanced features for health and fitness.',
+    price: 5999,
+    discountPrice: 4799,
+    category: 'Electronics',
+    images: ['https://images.unsplash.com/photo-1546868871-7041f2a55e12?auto=format&fit=crop&q=80&w=500'],
+    stock: 50,
+    unit: '1 unit',
+    vendorId: 'v1',
+    rating: 4.8,
+    numReviews: 128,
+    createdAt: new Date().toISOString(),
+    isFlashSale: true,
+    tags: ['watch', 'tech']
+  },
+  {
+    id: 'e2',
+    name: 'Wireless Earbuds Pro',
+    description: 'Noise cancelling premium sound.',
+    price: 3500,
+    discountPrice: 2800,
+    category: 'Electronics',
+    images: ['https://images.unsplash.com/photo-1590658268037-6bf12165a8df?auto=format&fit=crop&q=80&w=500'],
+    stock: 30,
+    unit: '1 pair',
+    vendorId: 'v1',
+    rating: 4.6,
+    numReviews: 85,
+    createdAt: new Date().toISOString(),
+    isFlashSale: true,
+    tags: ['audio', 'earbuds']
+  },
+  {
+    id: 'e3',
+    name: 'Mechanical Gaming Keyboard',
+    description: 'RGB backlit mechanical keyboard for pro gamers.',
+    price: 4500,
+    discountPrice: 3900,
+    category: 'Electronics',
+    images: ['https://images.unsplash.com/photo-1511467687858-23d96c32e4ae?auto=format&fit=crop&q=80&w=500'],
+    stock: 15,
+    unit: '1 unit',
+    vendorId: 'v2',
+    rating: 4.9,
+    numReviews: 42,
+    createdAt: new Date().toISOString(),
+    tags: ['gaming', 'keyboard']
+  },
+  {
+    id: 'e4',
+    name: 'Power Bank 20000mAh',
+    description: 'Fast charging high capacity power bank.',
+    price: 2200,
+    category: 'Electronics',
+    images: ['https://images.unsplash.com/photo-1609091839311-d536801ff141?auto=format&fit=crop&q=80&w=500'],
+    stock: 100,
+    unit: '1 unit',
+    vendorId: 'v1',
+    rating: 4.4,
+    numReviews: 156,
+    createdAt: new Date().toISOString(),
+    tags: ['power', 'travel']
+  },
+
+  // Vegetables
+  {
+    id: 'v1',
+    name: 'Organic Fresh Tomato - 500g',
+    description: 'Fresh organic tomatoes from local farms.',
+    price: 120,
+    discountPrice: 95,
+    category: 'Vegetables',
+    images: ['https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&q=80&w=500'],
+    stock: 50,
+    unit: '500g',
+    vendorId: 'v1',
+    rating: 4.8,
+    numReviews: 24,
+    createdAt: new Date().toISOString(),
+    isFlashSale: true,
+    tags: ['fresh', 'organic']
+  },
+  {
+    id: 'v2',
+    name: 'Green Broccoli - 1kg',
+    description: 'Nutritious fresh green broccoli.',
+    price: 250,
+    category: 'Vegetables',
+    images: ['https://images.unsplash.com/photo-1455243627921-9fce6747b74f?auto=format&fit=crop&q=80&w=500'],
+    stock: 20,
+    unit: '1kg',
+    vendorId: 'v1',
+    rating: 4.7,
+    numReviews: 15,
+    createdAt: new Date().toISOString(),
+    tags: ['healthy', 'green']
+  },
+  {
+    id: 'v3',
+    name: 'Sweet Corn - 2pcs',
+    description: 'Golden sweet corn directly from the farm.',
+    price: 80,
+    discountPrice: 60,
+    category: 'Vegetables',
+    images: ['https://images.unsplash.com/photo-1551754655-cd27e38d2076?auto=format&fit=crop&q=80&w=500'],
+    stock: 40,
+    unit: '2pcs',
+    vendorId: 'v2',
+    rating: 4.5,
+    numReviews: 30,
+    createdAt: new Date().toISOString(),
+    tags: ['corn', 'sweet']
+  },
+  {
+    id: 'v4',
+    name: 'Red Onions - 1kg',
+    description: 'Fresh red onions high quality.',
+    price: 110,
+    category: 'Vegetables',
+    images: ['https://images.unsplash.com/photo-1508747703725-719777637510?auto=format&fit=crop&q=80&w=500'],
+    stock: 200,
+    unit: '1kg',
+    vendorId: 'v1',
+    rating: 4.6,
+    numReviews: 88,
+    createdAt: new Date().toISOString(),
+    tags: ['onion', 'kitchen']
+  },
+
+  // Fruits
+  {
+    id: 'f1',
+    name: 'Fresh Fuji Apple - 1kg',
+    description: 'Sweet and crunchy Fuji apples.',
+    price: 320,
+    category: 'Fruits',
+    images: ['https://images.unsplash.com/photo-1560806887-1e4cd0b6cbd6?auto=format&fit=crop&q=80&w=500'],
+    stock: 40,
+    unit: '1kg',
+    vendorId: 'v1',
+    rating: 4.6,
+    numReviews: 18,
+    createdAt: new Date().toISOString(),
+    tags: ['fruit', 'fresh']
+  },
+  {
+    id: 'f2',
+    name: 'Ripe Cavendish Banana - 1 Dozen',
+    description: 'Perfectly ripe local market bananas.',
+    price: 150,
+    discountPrice: 130,
+    category: 'Fruits',
+    images: ['https://images.unsplash.com/photo-1571771894821-ad996211fdf4?auto=format&fit=crop&q=80&w=500'],
+    stock: 60,
+    unit: '1 Dozen',
+    vendorId: 'v1',
+    rating: 4.8,
+    numReviews: 45,
+    createdAt: new Date().toISOString(),
+    tags: ['banana', 'healthy']
+  },
+
+  // Meat
+  {
+    id: 'm1',
+    name: 'Farm Fresh Broiler Chicken - Whole',
+    description: 'Cleaned and ready to cook fresh chicken.',
+    price: 450,
+    category: 'Meat',
+    images: ['https://images.unsplash.com/photo-1587593817645-425017df7f6c?auto=format&fit=crop&q=80&w=500'],
+    stock: 10,
+    unit: '1.2kg',
+    vendorId: 'v1',
+    rating: 4.7,
+    numReviews: 45,
+    createdAt: new Date().toISOString(),
+    tags: ['meat', 'halal']
+  },
+  {
+    id: 'm2',
+    name: 'Premium Beef Boneless - 1kg',
+    description: 'Fresh boneless beef high protein.',
+    price: 850,
+    category: 'Meat',
+    images: ['https://images.unsplash.com/photo-1588168333986-5078d3ae3976?auto=format&fit=crop&q=80&w=500'],
+    stock: 15,
+    unit: '1kg',
+    vendorId: 'v1',
+    rating: 4.9,
+    numReviews: 32,
+    createdAt: new Date().toISOString(),
+    tags: ['beef', 'meat']
+  },
+
+  // Fashion (Add some new ones)
+  {
+    id: 'sh1',
+    name: 'Premium Cotton Panjabi - Blue',
+    description: 'Handcrafted premium cotton panjabi for special occasions.',
+    price: 2450,
+    discountPrice: 1950,
+    category: 'Fashion',
+    images: ['https://images.unsplash.com/photo-1621335829145-846e3860bb30?auto=format&fit=crop&q=80&w=500'],
+    stock: 25,
+    unit: '1 unit',
+    vendorId: 'v3',
+    rating: 4.7,
+    numReviews: 54,
+    createdAt: new Date().toISOString(),
+    tags: ['panjabi', 'culture']
+  },
+  {
+    id: 'sh2',
+    name: 'Designer Silk Saree',
+    description: 'Ethically sourced silk saree with traditional motifs.',
+    price: 8500,
+    category: 'Fashion',
+    images: ['https://images.unsplash.com/photo-1610030469983-98e550d6193c?auto=format&fit=crop&q=80&w=500'],
+    stock: 5,
+    unit: '1 unit',
+    vendorId: 'v3',
+    rating: 4.9,
+    numReviews: 12,
+    createdAt: new Date().toISOString(),
+    tags: ['saree', 'bridal']
+  },
+];

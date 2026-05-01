@@ -1,5 +1,9 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { CartItem, Product } from '../types';
+import { useAuth } from './AuthContext';
+import { db } from '../lib/firebase';
+import { doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore';
+import { handleFirestoreError, OperationType } from '../lib/firestoreErrorHandler';
 
 interface CartContextType {
   cart: CartItem[];
@@ -14,14 +18,60 @@ interface CartContextType {
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
 export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const { user } = useAuth();
   const [cart, setCart] = useState<CartItem[]>(() => {
     const savedCart = localStorage.getItem('cart');
     return savedCart ? JSON.parse(savedCart) : [];
   });
 
+  // Fetch cart from Firestore on login
+  useEffect(() => {
+    const fetchCart = async () => {
+      if (user) {
+        try {
+          const cartDoc = await getDoc(doc(db, 'carts', user.uid));
+          if (cartDoc.exists()) {
+            const remoteItems = cartDoc.data().items || [];
+            // Merge logic: For simplicity, we'll favor remote for now or just overwrite
+            // Real apps might merge local and remote. Here we'll just use remote if it exists.
+            if (remoteItems.length > 0) {
+              // We need full product details for CartItem, but the blueprint only stores productId/quantity
+              // However, the current CartItem type in the app seems to include the whole Product.
+              // I'll need to fetch product details if I only store IDs.
+              // For this demo, I'll store the whole item in Firestore (ignoring strict schema if needed, or I'll just store products in items)
+              setCart(remoteItems);
+            }
+          }
+        } catch (error) {
+          handleFirestoreError(error, OperationType.GET, `carts/${user.uid}`);
+        }
+      }
+    };
+    fetchCart();
+  }, [user]);
+
+  // Sync with localStorage and Firestore on change
   useEffect(() => {
     localStorage.setItem('cart', JSON.stringify(cart));
-  }, [cart]);
+    
+    const syncWithFirestore = async () => {
+      if (user) {
+        try {
+          await setDoc(doc(db, 'carts', user.uid), {
+            userId: user.uid,
+            items: cart,
+            updatedAt: serverTimestamp()
+          });
+        } catch (error) {
+          // Silent fail for background sync or use handleFirestoreError
+          console.error('Failed to sync cart:', error);
+        }
+      }
+    };
+
+    const timeout = setTimeout(syncWithFirestore, 1000); // Debounce
+    return () => clearTimeout(timeout);
+  }, [cart, user]);
 
   const addToCart = (product: Product, quantity: number) => {
     setCart(prev => {
