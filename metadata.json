@@ -1,0 +1,16 @@
+{
+  "name": "Bazarify - Ghorer Bazar Clone",
+  "description": "A high-performance, professional e-commerce platform with multi-vendor support, order tracking, and advanced admin controls.",
+  "requestFramePermissions": [
+    "camera",
+    "microphone",
+    "geolocation"
+  ],
+  "majorCapabilities": [
+    "Firebase Firestore",
+    "Firebase Authentication",
+    "Real-time Order Tracking",
+    "Admin Dashboard",
+    "Product Management"
+  ]
+}
